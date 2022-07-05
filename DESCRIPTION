@@ -1,0 +1,34 @@
+Package: slidePat
+Type: Package
+Title: Predict synthetic lethal partners in patient data
+Version: 0.1.0
+Date: 2022-06-22
+Author: Magdalena Budzinska, Ewa Szczurek
+Maintainer: Magdalena Budzinska <budzinska.m.phd@gmail.com>
+Description: A computational pipeline to predict synthetic lethality in cancers from patient data.
+License: GPL (>= 2)
+Encoding: UTF-8
+RoxygenNote: 7.2.0
+Depends: R (>= 3.6.0)
+Imports:
+	Hmisc,
+	stats,
+	data.table,
+    dplyr,
+    utils,
+	parallel,
+	rlang,
+    survival,
+    survminer,
+    graphics,
+    grDevices,
+	tidyr,
+	tibble
+URL: https://github.com/szczurek-lab/slidePat
+Suggests:
+	knitr,
+	rmarkdown,
+	testthat
+LazyData: true
+VignetteBuilder: 
+	knitr

@@ -1,0 +1,26 @@
+citHeader("To cite slidePat in publications use:")
+
+citEntry(
+  entry    = "Article",
+  title    = "SLIDE-VIP: a comprehensive, cell line- and patient-based framework for synthetic lethality prediction in DNA damage repair, chromatin remodeling and cell cycle.",
+  author   = personList(as.person("Magda Markowska"),
+                    as.person("Magdalena A. Budzinska"),
+                    as.person("Anna Coenen-Stass"),
+                    as.person("Senbai Kang"),
+                    as.person("Ewa Kizling"),
+                    as.person("Krzysztof Kolmus"),
+                    as.person("Krzysztof Koras"),
+                    as.person("Eike Staub"),
+                    as.person("Ewa Szczurek")),
+  journal  = "",
+  year     = "2022",
+  volume   = "",
+  number   = "",
+  pages    = "",
+  url      = "",
+  textVersion = paste(
+  "Magda Markowska, Magdalena A Budzinska, Anna Coenen-Stass, Senbai Kang, Ewa Kizling, Krzysztof Kolmus, Krzysztof Koras, Eike Staub, and Ewa Szczurek (2022).",
+  "SLIDE-VIP: a comprehensive, cell line- and patient-based framework for synthetic lethality prediction in DNA damage repair, chromatin remodeling and cell cycle."
+
+  )
+)
