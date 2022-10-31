@@ -7,39 +7,49 @@
 #'@param cormatrix matrix of the correlation coefficients
 #'@param pmatrix  matrix of the correlation p-values
 #'@importFrom tibble rownames_to_column
-#'@importFrom tidyr gather
+#'@importFrom tidyr pivot_longer
 #'@importFrom dplyr left_join
 #'
 #'@export
 
 flatCorMatrix <- function(cormatrix, pmatrix) {
-   cor_r <- tibble::rownames_to_column(as.data.frame(cormatrix), var = "row")
-   cor_r <- tidyr::gather(cor_r, "column", "cor", -1)
-   cor_p <- tibble::rownames_to_column(as.data.frame(pmatrix), var = "row")
-   cor_p <- tidyr::gather(cor_p, "column", "p", -1)
-   cor_p_matrix <- dplyr::left_join(cor_r, cor_p, by = c("row", "column"))
+   cor_r <- cormatrix %>% 
+       as.data.frame() %>%
+       tibble::rownames_to_column(var = "row") %>%
+       tidyr::pivot_longer(!row, names_to = "column", values_to = "cor")
+   cor_p <- pmatrix %>%
+       as.data.frame() %>%
+       tibble::rownames_to_column(var = "row") %>%
+       tidyr::pivot_longer(!row, names_to = "column", values_to = "p")
+   cor_matrix <- dplyr::left_join(cor_r, cor_p)
+   return(cor_matrix)
 }
 
 #'Get the correlation matrix of gene expression for pair of genes
 #'
-#'@param gene.pair pairs of genes to be tested
+#'@param gene.pair data.frame; pairs of genes to be tested. First column - gene A, second column - gene B
 #'@param expression data.frame; gene expression in tumor samples. The columns correspond to genes and the rows to tumor samples.
 #'@importFrom Hmisc rcorr
-#'@importFrom dplyr filter arrange
-#'@importFrom rlang .data
+#'@importFrom dplyr filter select
 #'@export
 
 corrExprGenePair <- function(gene.pair, expression){
-    gene_name1 <- as.vector(unlist(unique(gene.pair[1])))
-    gene_name2 <- as.vector(unlist(unique(gene.pair[2])))
-    gene_list <- append(gene_name1, gene_name2)
+    geneA <- as.vector(unlist(unique(gene.pair[1])))
+    geneB <- as.vector(unlist(unique(gene.pair[2])))
+    gene_list <- base::append(geneA, geneB) %>% 
+        unique()
+    
+    if(!(geneA %in% gene_list) || (geneB %in% gene_list)) {
+        return(data.frame("geneA" = geneA, "geneB" = geneB, "corr" = NA, "pvalue" = NA))
+    }
+    
     data <- expression %>%
         dplyr::select(any_of(gene_list))
+    
     corr <- Hmisc::rcorr(as.matrix(data, type = c("spearman")))
     corr_results<- flatCorMatrix(corr$r, corr$P)
     colnames(corr_results) <- c("geneA", "geneB","corr","pvalue")
     corr_results <- corr_results %>% 
-        dplyr::filter(.data$geneA %in% gene_name1 & .data$geneB %in% gene_name2) %>% 
-        dplyr::arrange(-corr) 
+        dplyr::filter(geneA %in% geneA & geneB %in% geneB) 
     return(corr_results)
 }

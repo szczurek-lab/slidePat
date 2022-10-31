@@ -7,7 +7,7 @@
 runFor2Genes(gene.pair, data)
 }
 \arguments{
-\item{gene.pair}{pairs of genes to be tested}
+\item{gene.pair}{data.frame; pairs of genes to be tested. First column - gene A, second column - gene B}
 
 \item{data}{data data.frame; gene alteration with survival status}
 }

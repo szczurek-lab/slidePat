@@ -68,16 +68,24 @@ checkLinearityPairwise <- function(gene1, gene2, alive, GlastFollowUp) {
     H[3] <- sum(log(GlastFollowUp[case2]))
     H[4] <- sum(log(GlastFollowUp[case3]))
     output <- LRT(S, H)
-    names(output) <- c('statistic', 'pvalue', 'SLflag')
-    output
+
+    ml0 <- -S[1] / H[1]
+    ml1 <- -S[2] / H[2]
+    ml2 <- -S[3] / H[3]
+    ml3 <- -S[4] / H[4]
+    
+    effect <- log(ml0) + log(ml3) - log(ml1) - log(ml2)
+    CL_flag <- ifelse(ml0 > ml3, 1, -1) #CL_flag - clinicaly relevant 
+    output <- c(output, CL_flag, effect)
+    names(output) <- c('statistic', 'pvalue', 'SLflag', 'CLflag', 'effect')
+    return(output)
 }
 
 #' Run SurvLRT for gene pairs
 #'
-#'@param gene.pair pairs of genes to be tested
+#'@param gene.pair data.frame; pairs of genes to be tested. First column - gene A, second column - gene B
 #'@param data data data.frame; gene alteration with survival status
 #'@importFrom dplyr select
-#'@importFrom rlang .data
 #'@return result table
 #'@export
 
@@ -86,16 +94,17 @@ runFor2Genes <- function(gene.pair, data){
     gene_name2 <- as.vector(unlist(unique(gene.pair[2])))
     #  print(paste("runFor2Genes",gene.name1,",",gene.name2,sep =" "))
     gene1 <- data %>% 
-        dplyr::select(all_of(gene_name1))
+        dplyr::select(any_of(gene_name1))
     gene2 <- data %>% 
-        dplyr::select(all_of(gene_name2))
+        dplyr::select(any_of(gene_name2))
     alive <- data %>% 
         dplyr::select(alive)
     glast_follow_up <- data %>% 
-        dplyr::select(.data$GlastFollowUp)
-    results <- checkLinearityPairwise(gene1, gene2, alive, glast_follow_up) %>% 
-        data.frame()
-    results <- cbind(gene.pair, t(results))
+        dplyr::select(GlastFollowUp)
+    results <- checkLinearityPairwise(gene1, gene2, alive, glast_follow_up) %>%
+        t() %>%
+        as.data.frame()
+    results <- base::cbind(gene.pair, results)
     return(results)
 }
 
@@ -103,39 +112,35 @@ runFor2Genes <- function(gene.pair, data){
 #'
 #'@param alt data.frame gene alteration
 #'@param survival data.frame input data with survival information
+#'@importFrom tibble column_to_rownames
 #'@return data frame
 #'@export
 
 inputDataSurvLRT <- function(alt, survival) {
-    data <- merge(alt, survival, by = "row.names")
-    row.names(data) <- data[ ,1]
-    data <- data[ ,-1]
+    data <- base::merge(alt, survival, by = "row.names") %>%
+        tibble::column_to_rownames(var = "Row.names")
 }
 
 #'Test the pair of genes
 #'
-#'@param gene.pair pairs of genes to be tested
+#'@param gene.pair data.frame; pairs of genes to be tested. First column - gene A, second column - gene B
 #'@param alt data.frame; gene alterations in tumor samples. The columns correspond to genes and the rows to tumor samples.
 #'@param survival data.frame; survival status 1 - alive, 0 - dead
 #'@param cores number of cores to be used; default 1
-#'@importFrom dplyr select_if
+#'@importFrom dplyr rename_with filter arrange
 #'@importFrom parallel mclapply
 #'@importFrom data.table rbindlist
 #'@return data frame
 #'@export
 
 survLRT <- function(gene.pair, alt, survival, cores = 1) {
-    gene_name1 <- as.vector(unlist(unique(gene.pair[1])))
-    gene_name2 <- as.vector(unlist(unique(gene.pair[2])))
-    alt <- alt %>% 
-        dplyr::select_if(names(alt) %in% c(gene_name1,gene_name2))
-    # if (!gene_name1 %in% colnames(alt)){ print(paste( "SurvLRT: Gene1 ", gene_name1, " not in alteration data, returning NA", sep=""))
-    #     return(NA)}
-    # if (!gene_name2 %in% colnames(alt)){ print(paste( "SurvLRT: Gene2 ", gene_name2, " not in alteration data, returning NA", sep=""))
-    #     return(NA)}
+    
+    gene.pair <- gene.pair %>%
+        dplyr::rename_with(~ c('geneA', 'geneB'), 1:2) %>%
+        dplyr::filter(geneA %in% colnames(alt) & geneB %in% colnames(alt))
     data <- inputDataSurvLRT(alt, survival)
-    gene.pairs <- split(gene.pair, row.names(gene.pair))
+    gene.pairs <- base::split(gene.pair, row.names(gene.pair))
     results <- parallel::mclapply(gene.pairs, mc.cores = cores, function(x) {runFor2Genes(x, data)})
-    output <- as.data.frame(data.table::rbindlist(results))
-    output <- output[order(-output$SLflag == 1, output$pvalue),]
+    output <- as.data.frame(data.table::rbindlist(results)) %>%
+        dplyr::arrange(-SLflag, pvalue)
 }

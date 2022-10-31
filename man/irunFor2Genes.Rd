@@ -7,7 +7,7 @@
 irunFor2Genes(gene.pair, data, expression, thr)
 }
 \arguments{
-\item{gene.pair}{pair of genes to be tested}
+\item{gene.pair}{data.frame; pairs of genes to be tested. First column - gene A, second column - gene B}
 
 \item{data}{data.frame; gene alteration with survival status}
 

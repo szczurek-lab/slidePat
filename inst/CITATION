@@ -12,12 +12,12 @@ citEntry(
                     as.person("Krzysztof Koras"),
                     as.person("Eike Staub"),
                     as.person("Ewa Szczurek")),
-  journal  = "",
+  journal  = "NA",
   year     = "2022",
-  volume   = "",
-  number   = "",
-  pages    = "",
-  url      = "",
+  volume   = "NA",
+  number   = "NA",
+  pages    = "NA",
+  url      = "NA",
   textVersion = paste(
   "Magda Markowska, Magdalena A Budzinska, Anna Coenen-Stass, Senbai Kang, Ewa Kizling, Krzysztof Kolmus, Krzysztof Koras, Eike Staub, and Ewa Szczurek (2022).",
   "SLIDE-VIP: a comprehensive, cell line- and patient-based framework for synthetic lethality prediction in DNA damage repair, chromatin remodeling and cell cycle."

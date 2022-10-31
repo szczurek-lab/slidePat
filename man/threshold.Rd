@@ -7,7 +7,7 @@
 threshold(gene.pair, expression)
 }
 \arguments{
-\item{gene.pair}{pair of genes to be tested}
+\item{gene.pair}{data.frame; pairs of genes to be tested. First column - gene A, second column - gene B}
 
 \item{expression}{data.frame; gene expression in tumor samples. The columns correspond to genes and the rows to tumor samples.}
 }
